@@ -6,29 +6,31 @@
     <title>نتائج الثانوية العامة</title>
     <!-- Google Fonts for modern Arabic typography -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Pako library for fast gzip decompression in browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="background-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
-    </div>
-
     <main class="container">
         <header class="header">
             <h1>نتائج الثانوية العامة</h1>
-            <p>ابحث عن نتيجتك برقم الجلوس أو الاسم</p>
+            <p>ابحث عن نتيجتك بسرعة وسهولة</p>
         </header>
 
         <section class="search-section">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="أدخل رقم الجلوس أو الاسم هنا...">
-                <button id="searchBtn" aria-label="بحث">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                </button>
+            <div class="search-toggle">
+                <input type="radio" id="searchBySeat" name="searchType" value="seat" checked>
+                <label for="searchBySeat">رقم الجلوس</label>
+                
+                <input type="radio" id="searchByName" name="searchType" value="name">
+                <label for="searchByName">الاسم</label>
             </div>
-            <div id="errorMessage" class="error-message hidden">الرجاء إدخال رقم جلوس أو اسم للبحث</div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="أدخل رقم الجلوس هنا...">
+                <button id="searchBtn" aria-label="بحث">بحث</button>
+            </div>
+            <div id="errorMessage" class="error-message hidden">الرجاء إدخال بيانات صحيحة للبحث</div>
         </section>
 
         <section id="resultsContainer" class="results-container hidden">

@@ -4,18 +4,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsContainer = document.getElementById('resultsContainer');
     const errorMessage = document.getElementById('errorMessage');
     
+    // Toggle elements
+    const searchBySeat = document.getElementById('searchBySeat');
+    const searchByName = document.getElementById('searchByName');
+    
     let studentsData = [];
 
-    // Fetch data
-    fetch('data.json')
+    // Fetch and decompress data
+    fetch('data.json.gz')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            return response.json();
+            return response.arrayBuffer();
         })
-        .then(data => {
-            studentsData = data;
+        .then(buffer => {
+            // Decompress the gzip buffer using pako
+            const decompressed = pako.inflate(buffer, { to: 'string' });
+            studentsData = JSON.parse(decompressed);
+            console.log('Data loaded successfully:', studentsData.length, 'records');
         })
         .catch(error => {
             console.error('Error fetching data:', error);
@@ -27,6 +34,19 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             resultsContainer.classList.remove('hidden');
         });
+
+    // Update placeholder based on selected toggle
+    const updatePlaceholder = () => {
+        if (searchBySeat.checked) {
+            searchInput.placeholder = "أدخل رقم الجلوس هنا...";
+        } else {
+            searchInput.placeholder = "أدخل اسم الطالب هنا...";
+        }
+        searchInput.focus();
+    };
+
+    searchBySeat.addEventListener('change', updatePlaceholder);
+    searchByName.addEventListener('change', updatePlaceholder);
 
     const calculatePercentage = (degree) => {
         const percentage = (parseFloat(degree) / 320) * 100;
@@ -44,34 +64,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
         } else {
-            results.forEach(student => {
+            // Limit results to 50 if searching by name to prevent browser crash
+            const displayLimit = 50;
+            const limitedResults = results.slice(0, displayLimit);
+            
+            limitedResults.forEach(student => {
                 const card = document.createElement('div');
                 card.className = 'result-card';
                 
                 card.innerHTML = `
                     <div class="result-header">
-                        <h2 class="student-name">${student.arabic_name}</h2>
+                        <h2 class="student-name">${student[1]}</h2>
                         <div class="seat-number">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            رقم الجلوس: ${student.seating_no}
+                            رقم الجلوس: ${student[0]}
                         </div>
                     </div>
                     <div class="result-details">
                         <div class="detail-item">
                             <span class="detail-label">المجموع الكلي</span>
-                            <span class="detail-value">${student.total_degree} / 320</span>
+                            <span class="detail-value">${student[2]} / 320</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">النسبة المئوية</span>
-                            <span class="detail-value percentage-value">${calculatePercentage(student.total_degree)}</span>
+                            <span class="detail-value">${calculatePercentage(student[2])}</span>
                         </div>
                     </div>
                     <div class="status-badge">
-                        ${student.student_case_desc}
+                        ${student[3]}
                     </div>
                 `;
                 resultsContainer.appendChild(card);
             });
+            
+            if (results.length > displayLimit) {
+                const notice = document.createElement('div');
+                notice.className = 'error-message';
+                notice.style.marginTop = '1rem';
+                notice.textContent = `تم عرض أول ${displayLimit} نتيجة فقط. يرجى كتابة الاسم بشكل أدق.`;
+                resultsContainer.appendChild(notice);
+            }
         }
         
         resultsContainer.classList.remove('hidden');
@@ -88,14 +119,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         errorMessage.classList.add('hidden');
         
-        // Check if query is a number (seating no) or text (name)
-        const isNumeric = /^\d+$/.test(query);
+        const isSearchBySeat = searchBySeat.checked;
         
         const results = studentsData.filter(student => {
-            if (isNumeric) {
-                return student.seating_no.toString() === query;
+            if (isSearchBySeat) {
+                return student[0] && student[0].toString() === query;
             } else {
-                return student.arabic_name.includes(query);
+                return student[1] && student[1].toString().includes(query);
             }
         });
         
