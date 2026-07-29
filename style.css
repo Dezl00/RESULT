@@ -129,12 +129,17 @@ body {
     transition: background-color 0.2s ease;
 }
 
-.search-box button:hover {
+.search-box button:hover:not(:disabled) {
     background: var(--primary-hover);
 }
 
-.search-box button:active {
+.search-box button:active:not(:disabled) {
     background: var(--primary);
+}
+
+.search-box button:disabled {
+    background: #9CA3AF;
+    cursor: not-allowed;
 }
 
 .error-message {

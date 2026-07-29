@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle elements
     const searchBySeat = document.getElementById('searchBySeat');
     const searchByName = document.getElementById('searchByName');
+    // Set initial loading state
+    searchBtn.disabled = true;
+    searchInput.disabled = true;
+    searchInput.placeholder = "جاري تحميل 700 ألف نتيجة... يرجى الانتظار";
     
     let studentsData = [];
 
@@ -23,6 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const decompressed = pako.inflate(buffer, { to: 'string' });
             studentsData = JSON.parse(decompressed);
             console.log('Data loaded successfully:', studentsData.length, 'records');
+            
+            // Enable UI after loading
+            searchBtn.disabled = false;
+            searchInput.disabled = false;
+            updatePlaceholder(); // Reset placeholder to correct text
         })
         .catch(error => {
             console.error('Error fetching data:', error);
@@ -37,6 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update placeholder based on selected toggle
     const updatePlaceholder = () => {
+        if (searchInput.disabled) return; // Do not update if still loading
+        
         if (searchBySeat.checked) {
             searchInput.placeholder = "أدخل رقم الجلوس هنا...";
         } else {
